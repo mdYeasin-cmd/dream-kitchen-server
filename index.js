@@ -10,21 +10,29 @@ app.use(cors());
 app.use(express.json());
 
 // Database
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.0nieed1.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
+
         const foodCollection = client.db('foodsInfoDB').collection('foods');
-        // Create Operation
+
+        // Create Operation - Create food document
         app.post('/addNewFood', async(req, res) => {
             const foodItem = req.body;
             console.log(foodItem);
             const result = await foodCollection.insertOne(foodItem);
             res.send(result);
         })
+
+        // Read Operation - Get foods from foods collection
+        app.get('/foods', async (req, res) => {
+            const query = {}
+            const foods = await foodCollection.find(query).toArray();
+            res.send(foods);
+        })
+
     }
     catch {
 
