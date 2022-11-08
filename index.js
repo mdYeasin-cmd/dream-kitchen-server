@@ -19,7 +19,7 @@ async function run() {
         const foodCollection = client.db('foodsInfoDB').collection('foods');
 
         // Create Operation - Create food document
-        app.post('/addNewFood', async(req, res) => {
+        app.post('/addNewFood', async (req, res) => {
             const foodItem = req.body;
             console.log(foodItem);
             const result = await foodCollection.insertOne(foodItem);
@@ -29,8 +29,10 @@ async function run() {
         // Read Operation - Get foods from foods collection
         app.get('/foods', async (req, res) => {
             const query = {}
-            const foods = await foodCollection.find(query).toArray();
-            res.send(foods);
+            const allFoods = await foodCollection.find(query).toArray();
+            const cursor = foodCollection.find(query);
+            const firstThreeFoods = await cursor.limit(3).toArray();
+            res.send({ firstThreeFoods, allFoods });
         })
 
     }
