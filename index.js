@@ -44,11 +44,10 @@ async function run() {
 
         app.get('/reviews/:id', async(req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = { serviceId: id };
-            console.log(query);
             const cursor = reviewCollection.find(query);
-            const reviews = await cursor.toArray();
+            const result = await cursor.toArray();
+            const reviews = result.reverse();
             res.send(reviews);
         })
 
