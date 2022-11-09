@@ -17,12 +17,19 @@ async function run() {
     try {
 
         const foodCollection = client.db('foodsInfoDB').collection('foods');
+        const reviewCollection = client.db('foodsInfoDB').collection('reviews');
 
-        // Create Operation - Create food document
+        // Create Operation
         app.post('/addNewFood', async (req, res) => {
             const foodItem = req.body;
             console.log(foodItem);
             const result = await foodCollection.insertOne(foodItem);
+            res.send(result);
+        })
+
+        app.post('/review', async(req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
             res.send(result);
         })
 
