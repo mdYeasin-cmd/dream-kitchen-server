@@ -33,13 +33,23 @@ async function run() {
             res.send(result);
         })
 
-        // Read Operation - Get foods from foods collection
+        // Read Operation
         app.get('/foods', async (req, res) => {
             const query = {}
             const allFoods = await foodCollection.find(query).toArray();
             const cursor = foodCollection.find(query);
             const firstThreeFoods = await cursor.limit(3).toArray();
             res.send({ firstThreeFoods, allFoods });
+        })
+
+        app.get('/reviews/:id', async(req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { serviceId: id };
+            console.log(query);
+            const cursor = reviewCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
         })
 
         // Read Operation Get specific food using food id
