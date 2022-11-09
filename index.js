@@ -52,6 +52,14 @@ async function run() {
             res.send(reviews);
         })
 
+        app.get('/myReviews', async (req, res) => {
+            const userEmail = req.query.email;
+            const query = { email: userEmail };
+            const cursor = reviewCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
+
         // Read Operation Get specific food using food id
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
