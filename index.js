@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
@@ -8,6 +9,23 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.send({ errorMessage: 'Unauthorised access' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.send({ errorMessage: 'Forbidden access' });
+        }
+        req.decoded = decoded;
+        next();
+    });
+}
 
 // Database
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.0nieed1.mongodb.net/?retryWrites=true&w=majority`;
@@ -18,6 +36,12 @@ async function run() {
 
         const foodCollection = client.db('foodsInfoDB').collection('foods');
         const reviewCollection = client.db('foodsInfoDB').collection('reviews');
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ token });
+        });
 
         // Create Operation
         app.post('/addNewFood', async (req, res) => {
@@ -60,9 +84,22 @@ async function run() {
 
         })
 
-        app.get('/myReviews', async (req, res) => {
-            const userEmail = req.query.email;
-            const query = { email: userEmail };
+        app.get('/myReviews', verifyJWT, async (req, res) => {
+
+            const decoded = req.decoded;
+
+            if(decoded.email !== req.query.email){
+                res.send({message: 'Unauthorised access'});
+            }
+
+            let query = {}
+
+            if(req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            
             const cursor = reviewCollection.find(query);
             const reviews = await cursor.toArray();
             res.send(reviews);
