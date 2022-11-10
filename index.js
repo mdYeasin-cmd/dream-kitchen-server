@@ -37,6 +37,7 @@ async function run() {
         const foodCollection = client.db('foodsInfoDB').collection('foods');
         const reviewCollection = client.db('foodsInfoDB').collection('reviews');
 
+        // Create JWT
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -64,6 +65,14 @@ async function run() {
             const cursor = foodCollection.find(query);
             const firstThreeFoods = await cursor.limit(3).toArray();
             res.send({ firstThreeFoods, allFoods });
+        })
+
+        app.get('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { _id: ObjectId(id) };
+            const food = await foodCollection.findOne(query);
+            res.send(food);
         })
 
         app.get('/reviews/:id', async (req, res) => {
@@ -99,20 +108,13 @@ async function run() {
                     email: req.query.email
                 }
             }
-            
+
             const cursor = reviewCollection.find(query);
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
 
-        // Read Operation Get specific food using food id
-        app.get('/foods/:id', async (req, res) => {
-            const id = req.params.id;
-            console.log(id);
-            const query = { _id: ObjectId(id) };
-            const food = await foodCollection.findOne(query);
-            res.send(food);
-        })
+        
 
         // Update Operation
         app.patch('/singleReview/:id', async (req, res) => {
